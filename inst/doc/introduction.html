@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+<meta name="date" content="2020-03-31" />
+
+<title>Introduction to legco</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to legco</h1>
+<h4 class="date">2020-03-31</h4>
+
+
+
+<p><code>legco</code> is an R package to fetch data from the Hong Kong Legislative Council (LegCo) API. It provides easy access to LegCo’s open data in an integrated manner without having to dig deep into the structures and parameters of the API. Each function corresponds to a data endpoint of the API. Data is retrieved in json format and presented in a dataframe.</p>
+<div id="installing-legco" class="section level2">
+<h2>Installing legco</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">&quot;elgarteo/legco&quot;</span>)</span></code></pre></div>
+<p>And to load it before every use:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">library</span>(legco)</span></code></pre></div>
+</div>
+<div id="understanding-the-legco-api" class="section level2">
+<h2>Understanding the LegCo API</h2>
+<p>The LegCo API consists of different databases with separate structures and identifiers. The functions in this package correspond to the various data endpoints of these databases. The databases supported by this package and the associating functions are as follow.</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Bills Database</strong></p>
+<p>This database contains key information of all the bills that have been presented in LegCo since 1906. This database is accessible with the following function:</p>
+<ul>
+<li><code>all_bills()</code> fetches the information of bills that have gone through LegCo.</li>
+</ul>
+<p>Compared to <code>bills()</code> of the Hansard Database, <code>all_bills()</code> provides much more comprehensive information of bills, including all key dates and the proposer.</p>
+<p>See <a href="./bills.html">here</a> for more information of this database.</p></li>
+<li><p><strong>Hansard Database</strong></p>
+<p>This database contains information on matters discussed in Council meeting since the fifth term of LegCo. Hinting by its name, the database is built upon the PDF hansard files. Relying on the bookmarks and section codes of the hansard files, the data endpoints retrieve data from the files directly. This database is accessible with the following functions/data:</p>
+<ul>
+<li><code>hansard()</code> fetches the information of the hansard files.</li>
+<li><code>legco_section_type</code> is a data frame that explains that meaning of the section codes used in the hansard files.</li>
+<li><code>subjects()</code> fetches the subjects in the hansard files, which are essentially items in the meeting agenda.</li>
+<li><code>speakers()</code> fetches the speakers in meetings, including members, government officials and secretariat staff.</li>
+<li><code>rundown()</code> fetches the full text of the hansard files.</li>
+<li><code>questions()</code> fetches the questions put on the government by the members during Council meetings.</li>
+<li><code>bills()</code> fetches bills that have been debated in Council meetings.</li>
+<li><code>motions()</code> fetches motions that have been debated in Council meetings.</li>
+<li><code>petitions()</code> fetches petitions initiated by members in Council meetings.</li>
+<li><code>addresses()</code> fetches addresses made by members or government officials while presenting papers to the Council.</li>
+<li><code>statements()</code> fetches statements made by government officials in Council meetings.</li>
+<li><code>voting_results()</code> fetches the results of votes conducted in Council meetings.</li>
+<li><code>summoning_bells()</code> fetches instances in which the summoning bell have been rung in Council meetings.</li>
+</ul>
+<p>When using in combination, these functions are essentially hansard files crawler.</p>
+<p>See <a href="./hansard.html">here</a> for more information of this database.</p></li>
+<li><p><strong>Meeting Attendance Database</strong></p>
+<p>This database contains the attendance record of Council and committee open meetings since the sixth term.</p>
+<p>This database is accessible with the following function:</p>
+<ul>
+<li><code>attendance()</code> fetches the attendance of members in Council and committee meetings.</li>
+</ul>
+<p>See <a href="./attn.html">here</a> for more information of this database.</p></li>
+<li><p><strong>Meeting Schedule Database</strong></p>
+<p>This database contains the member list and the meeting schedule of the Council and every committee since the fifth term of LegCo. This database is accessible with the following functions:</p>
+<ul>
+<li><code>term()</code> fetches the terms in LegCo.</li>
+<li><code>session()</code> fetches the sessions in LegCo.</li>
+<li><code>committee()</code> fetches a list of LegCo committees.</li>
+<li><code>membership()</code> fetches the members of each committee in the form of Member ID.</li>
+<li><code>member()</code> fetches the members in LegCo.</li>
+<li><code>member_term()</code> fetches the terms LegCo members have served in.</li>
+<li><code>meeting()</code> fetches the meeting schedule of LegCo committees in the form of Meet ID.</li>
+<li><code>meeting_committee()</code> fetches which committee holds a meeting.</li>
+</ul>
+<p>While the purpose of <code>member()</code> is similar to <code>speakers()</code> of the Hansard Database, <code>member()</code> returns only LegCo members. Their identifiers, i.e. Speaker ID and Member ID, are unique and not interchangeable.</p>
+<p>See <a href="./schedule.html">here</a> for more information of this database.</p></li>
+<li><p><strong>Voting Results Database</strong></p>
+<p>This database contains voting results of the Council, the House Committee and the Finance Committee and its subcomittees starting from the fifth term of LegCo. This database is accessible with the following function:</p>
+<ul>
+<li><code>voting_record()</code> fetches the information of votes conducted in the meetings, including the voting record of each member.</li>
+</ul>
+<p>While <code>voting_results()</code> of the Hansard Database returns only the overall result of votes conducted in Council meetings, <code>voting_record()</code> returns much more detailed information of votes conducted in Council and other four committees and subcommittees meetings.</p>
+<p>See <a href="./voting.html">here</a> for more information of this database.</p></li>
+</ol>
+<hr />
+<p>A generic function <code>legco_api()</code> is available for access to other databases and endpoints of the LegCo API that are not specified here.</p>
+<p>All functions can also be accessed with the prefix <code>legco_</code>, e.g. <code>legco_speakers()</code> and <code>speakers()</code> return the same result.</p>
+</div>
+<div id="api-limits" class="section level2">
+<h2>API Limits</h2>
+<div id="rate-limit" class="section level3">
+<h3>Rate Limit</h3>
+<p>LegCo API has a rate limit of approximately 1000 requests per IP per hour. Once the limit is reached, you will not be able to retrieve any data for awhile. If you run into the following error message while pretty sure you have entered the correct parameters, you have probably reached the limit:</p>
+<pre><code>## Error in doTryCatch(return(expr), name, parentenv, handler): The request did not return any data: Invalid search parameters or rate limit exceeded.</code></pre>
+</div>
+<div id="node-count-limit" class="section level3">
+<h3>Node Count Limit</h3>
+<p>Another limit is the node count limit which is associated with the setting of the LegCo API server. The limit is at most 100 nodes per request, or approximately 20 filtering conditions in most cases. For instance, the following code contains 21 filtering conditions and thus reach the node count limit:</p>
+<pre><code>## Error in legco_api(&quot;hansard&quot;, query, 1000, count, verbose): Parameters too long. Please shorten your parameters and break down into multiple requests.</code></pre>
+<p>If you run into the error message above, you need to break it down to multiple smaller requests, like <a href="#examples">one of the examples below</a>.</p>
+<p>Note that numeric filtering conditions that are sequential are not subjected to this limit:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># A request with sequential numeric filtering conditions</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">50</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">speakers</span>(<span class="dt">speaker_id =</span> x)</span></code></pre></div>
+<p>The code above will execute just fine without reaching the node count limit even though it effectively contains 50 filtering conditions.</p>
+</div>
+<div id="common-connection-problems" class="section level3">
+<h3>Common Connection Problems</h3>
+<p>It is common for the connection to the LegCo API to experience SSL error from time to time, especially during repeated requests. This can usually be resolved simply by retrying. This package automatically retries the request once when an SSL error occurs with the following messages:</p>
+<pre><code>## Encountered Error in open.connection(con, &quot;rb&quot;): LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to app.legco.gov.hk:443</code></pre>
+<pre><code>## Possible common connection problem resolvable by retrying.</code></pre>
+<pre><code>## Retrying...</code></pre>
+<p>If the same error happens again after retrying, the process will be terminated with an error message. In this case, the cause of the problem is likely to be a genuine SSL error.</p>
+<p>Another common problem is that the LegCo API sometimes returns an empty json file when it is not supposed to. Again, this can usually be resolved by retrying. This package automatically retries the request once to make sure that an invalid search query or rate limit is not the cause of the problem. The following messages will be shown if this problem occurs:</p>
+<p>If the API returns an empty result again, the process will be terminated with an error message. In this case, the cause is likely to be invalid search parameters or that you have exceeded the rate limit (see <a href="#rate-limit">here</a>).</p>
+</div>
+</div>
+<div id="examples" class="section level2">
+<h2>Examples</h2>
+<p>The following code shows all the Council meetings held from May 1, 2018 to May 31, 2018.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">hansard</span>(<span class="dt">from =</span> <span class="st">&quot;2018-05-01&quot;</span>, <span class="dt">to =</span> <span class="st">&quot;2018-05-31&quot;</span>)</span></code></pre></div>
+<pre><code>##    HansardID         MeetingDate          AgendaDate isCEQandA isCEQT
+## 1       2407 2018-05-02 00:00:00 2018-05-02 00:00:00         0      0
+## 2       2526 2018-05-03 00:00:00 2018-05-02 00:00:00         0      0
+## 3       2405 2018-05-03 00:00:00 2018-05-03 00:00:00         1      0
+## 4       2418 2018-05-09 00:00:00 2018-05-09 00:00:00         0      0
+## 5       2419 2018-05-10 00:00:00 2018-05-09 00:00:00         0      0
+## 6       2425 2018-05-16 00:00:00 2018-05-16 00:00:00         0      0
+## 7       2434 2018-05-17 00:00:00 2018-05-16 00:00:00         0      0
+## 8       2443 2018-05-23 00:00:00 2018-05-23 00:00:00         0      1
+## 9       2451 2018-05-23 00:00:00 2018-05-23 00:00:00         0      0
+## 10      2450 2018-05-24 00:00:00 2018-05-23 00:00:00         0      0
+## 11      2541 2018-05-30 00:00:00 2018-05-30 00:00:00         0      0
+## 12      2462 2018-05-31 00:00:00 2018-05-30 00:00:00         0      0
+##                                                                          HansardFileURL
+## 1   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180502-translate-e.pdf
+## 2   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180503-translate-e.pdf
+## 3  https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180503a-translate-e.pdf
+## 4   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180509-translate-e.pdf
+## 5   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180510-translate-e.pdf
+## 6   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180516-translate-e.pdf
+## 7   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180517-translate-e.pdf
+## 8  https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180523q-translate-e.pdf
+## 9   https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180523-translate-e.pdf
+## 10  https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180524-translate-e.pdf
+## 11  https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180530-translate-e.pdf
+## 12  https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180531-translate-e.pdf</code></pre>
+<p>To fetch the items on the agenda of the meeting on May 23, 2018:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">subjects</span>(<span class="dt">hansard_id =</span> <span class="dv">2451</span>)</span></code></pre></div>
+<pre><code>##            MeetingDate
+## 1  2018-05-23 00:00:00
+## 2  2018-05-23 00:00:00
+## 3  2018-05-23 00:00:00
+## 4  2018-05-23 00:00:00
+## 5  2018-05-23 00:00:00
+## 6  2018-05-23 00:00:00
+## 7  2018-05-23 00:00:00
+## 8  2018-05-23 00:00:00
+## 9  2018-05-23 00:00:00
+## 10 2018-05-23 00:00:00
+## 11 2018-05-23 00:00:00
+## 12 2018-05-23 00:00:00
+## 13 2018-05-23 00:00:00
+## 14 2018-05-23 00:00:00
+## 15 2018-05-23 00:00:00
+## 16 2018-05-23 00:00:00
+## 17 2018-05-23 00:00:00
+## 18 2018-05-23 00:00:00
+## 19 2018-05-23 00:00:00
+## 20 2018-05-23 00:00:00
+## 21 2018-05-23 00:00:00
+## 22 2018-05-23 00:00:00
+## 23 2018-05-23 00:00:00
+## 24 2018-05-23 00:00:00
+## 25 2018-05-23 00:00:00
+## 26 2018-05-23 00:00:00
+## 27 2018-05-23 00:00:00
+## 28 2018-05-23 00:00:00
+## 29 2018-05-23 00:00:00
+## 30 2018-05-23 00:00:00
+## 31 2018-05-23 00:00:00
+## 32 2018-05-23 00:00:00
+## 33 2018-05-23 00:00:00
+## 34 2018-05-23 00:00:00
+## 35 2018-05-23 00:00:00
+## 36 2018-05-23 00:00:00
+##                                                                                        Subject
+## 1                                                                            MEETING COMMENCED
+## 2                                                                    ORAL ANSWERS TO QUESTIONS
+## 3                        Collection of handling charges from persons purchasing tickets online
+## 4                                   Measures to improve the reception of visitors to Hong Kong
+## 5                       Foreign domestic helpers congregating in public places during holidays
+## 6                            Pressure on road traffic brought about by cross-boundary vehicles
+## 7                       Assisting local residents in acquiring properties by levying new taxes
+## 8                                                    Maternity protection for female employees
+## 9                                                                 WRITTEN ANSWERS TO QUESTIONS
+## 10                       Lack of berthing spaces at typhoon shelters for small fishing vessels
+## 11                                                                Sponsored Visitors Programme
+## 12       A large number of Mainland tourists staying overnight in local camp sites and beaches
+## 13                  Combating traffic contraventions in New Territories North and Kowloon East
+## 14                                  Helping ethnic minority women integrate into the community
+## 15                                 Employment of academic staff by post-secondary institutions
+## 16                                   Assessments to rates for properties on agricultural lands
+## 17                                         Child health assessment and rehabilitation services
+## 18                                            Measures to boost the supply of industrial lands
+## 19               Development of high-tier data centres and cross-boundary transmission of data
+## 20                                 Bogus marriage-related offences involving human trafficking
+## 21  Provision of community support services for residents of new public rental housing estates
+## 22                                                          Support for single-parent families
+## 23                                                                       Trading of shark fins
+## 24                                                               Management of water resources
+## 25                                              Supply of first-hand private residential units
+## 26                                                                             GOVERNMENT BILL
+## 27                                                            FIRST READING OF GOVERNMENT BILL
+## 28                                                Inland Revenue (Amendment) (No. 4) Bill 2018
+## 29                                                           SECOND READING OF GOVERNMENT BILL
+## 30                                                Inland Revenue (Amendment) (No. 4) Bill 2018
+## 31                                                                            MEMBERS&#39; MOTIONS
+## 32 Proposed resolution under section 34(4) of the Interpretation and General Clauses Ordinance
+## 33                                         Motion under Rule 49B(1A) of the Rules of Procedure
+## 34                                   Report of the Joint Subcommittee on Long-term Care Policy
+## 35                                                          Not forgetting the 4 June incident
+## 36                                                                       SUSPENSION OF MEETING
+##    ResumptionOf SectionCode RundownID HansardID
+## 1            NA         mtc    828481      2451
+## 2            NA         orq    828485      2451
+## 3            NA         orq    828487      2451
+## 4            NA         orq    828511      2451
+## 5            NA         orq    828541      2451
+## 6            NA         orq    828581      2451
+## 7            NA         orq    828603      2451
+## 8            NA         orq    828643      2451
+## 9            NA         wrq    828673      2451
+## 10           NA         wrq    828674      2451
+## 11           NA         wrq    828677      2451
+## 12           NA         wrq    828680      2451
+## 13           NA         wrq    828683      2451
+## 14           NA         wrq    828686      2451
+## 15           NA         wrq    828689      2451
+## 16           NA         wrq    828692      2451
+## 17           NA         wrq    828695      2451
+## 18           NA         wrq    828698      2451
+## 19           NA         wrq    828701      2451
+## 20           NA         wrq    828704      2451
+## 21           NA         wrq    828707      2451
+## 22           NA         wrq    828710      2451
+## 23           NA         wrq    828713      2451
+## 24           NA         wrq    828716      2451
+## 25           NA         wrq    828719      2451
+## 26           NA         bil    828722      2451
+## 27           NA         b1r    828723      2451
+## 28           NA         b1r    828725      2451
+## 29           NA         b2r    828727      2451
+## 30           NA         b2r    828729      2451
+## 31           NA         mbm    828732      2451
+## 32           NA         mbm    828734      2451
+## 33           NA         mbm    828743      2451
+## 34           NA         mbm    828747      2451
+## 35           NA         mbm    828783      2451
+## 36           NA         som    828827      2451</code></pre>
+<p>In this example, we will look into the motion <em>Not forgetting the 4 June incident</em>.</p>
+<p>The section codes indicate the type of the business. For example, the section code “mbm” of the <em>Not forgetting the 4 June incident</em> means that it is a member’s motion:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>legco_section_type[legco_section_type<span class="op">$</span>SectionCode <span class="op">==</span><span class="st"> &quot;mbm&quot;</span>, ]</span></code></pre></div>
+<pre><code>##    SectionCode          NameEng  NameChi
+## 44         mbm Members&#39; motions 議員議案</code></pre>
+<p>The RundownID indicates the location of the first paragraph of the matter concerned in the hansard file. In other words, paragraphs of RundownID between 828783 and 828826 (one RundownID prior to the next item on the agenda) are the records of the matter the <em>Not forgetting the 4 June incident</em> during the meeting. The full text of these paragraphs can be fetched by:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>w &lt;-<span class="st"> </span><span class="kw">rundown</span>(<span class="dt">rundown_id =</span> <span class="dv">828783</span><span class="op">:</span><span class="dv">828826</span>)</span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co"># Order by RundownID, i.e. chronological order</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a>w &lt;-<span class="st"> </span>w[<span class="kw">order</span>(w<span class="op">$</span>RundownID), ]</span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="kw">rownames</span>(w) &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(w)</span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="co"># Some two paragraphs of the hansard relevant to the discussion of the motion</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a>w<span class="op">$</span>Content[<span class="dv">41</span><span class="op">:</span><span class="dv">42</span>]</span></code></pre></div>
+<pre><code>## [1] &quot;PRESIDENT (in Cantonese): Will Members please proceed to vote.&quot;                                                  
+## [2] &quot;PRESIDENT (in Cantonese): Mr Abraham SHEK, do you wish to cast your vote?(Mr Abraham SHEK did not cast any vote)&quot;</code></pre>
+<p>To check which members have spoken about the motion and to look up some of their names:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>x &lt;-<span class="st"> </span><span class="kw">unique</span>(w<span class="op">$</span>SpeakerID[<span class="op">!</span><span class="kw">is.na</span>(w<span class="op">$</span>SpeakerID)])</span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="kw">speakers</span>(<span class="dt">speaker_id =</span> x)</span></code></pre></div>
+<pre><code>## Error in legco_api(&quot;hansard&quot;, query, 1000, count, verbose): Parameters too long. Please shorten your parameters and break down into multiple requests.</code></pre>
+<p>The code above produces 27 filtering conditions which exceed the node count limit. If you need have parameters longer than that, break them down into multiple requests:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>y1 &lt;-<span class="st"> </span><span class="kw">speakers</span>(<span class="dt">speaker_id =</span> x[<span class="dv">1</span><span class="op">:</span><span class="dv">19</span>])</span>
+<span id="cb19-2"><a href="#cb19-2"></a>y2 &lt;-<span class="st"> </span><span class="kw">speakers</span>(<span class="dt">speaker_id =</span> x[<span class="dv">20</span><span class="op">:</span><span class="dv">27</span>])</span>
+<span id="cb19-3"><a href="#cb19-3"></a>y &lt;-<span class="st"> </span><span class="kw">rbind</span>(y1, y2)</span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="co"># Show members who have spoken about this motion</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a><span class="kw">head</span>(y[y<span class="op">$</span>Type <span class="op">==</span><span class="st"> &quot;MB&quot;</span>, ])</span></code></pre></div>
+<pre><code>##   SpeakerID NameChi         NameEng Type Initial  FirstName LastName
+## 2       138  林卓廷  LAM CHEUK-TING   MB     LCT Cheuk-ting      LAM
+## 3       148  許智峯    HUI CHI-FUNG   MB     HCF   Chi-fung      HUI
+## 4       115  張超雄 FERNANDO CHEUNG   MB     CCH  Chiu-hung   CHEUNG
+## 5        99  胡志偉      WU CHI-WAI   MB     WCW    Chi-wai       WU
+## 6       141  邵家臻    SHIU KA-CHUN   MB     SKC    Ka-chun     SHIU
+## 7       109  梁繼昌   KENNETH LEUNG   MB      KL Kai-cheong    LEUNG</code></pre>
+<p>To find out the voting results of the motion:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>v &lt;-<span class="st"> </span><span class="kw">voting_results</span>(<span class="dt">from =</span> w<span class="op">$</span>MeetingDate[<span class="dv">1</span>], <span class="dt">to =</span> w<span class="op">$</span>MeetingDate[<span class="dv">1</span>], <span class="dt">section_code =</span> <span class="st">&quot;mbm&quot;</span>)</span>
+<span id="cb21-2"><a href="#cb21-2"></a>v[v<span class="op">$</span>Subject <span class="op">==</span><span class="st"> &quot;Not forgetting the 4 June incident&quot;</span>, ]</span></code></pre></div>
+<pre><code>##           MeetingDate                            Subject VoteResult SectionCode
+## 3 2018-05-23 00:00:00 Not forgetting the 4 June incident  Negatived         mbm
+##   RundownID HansardID
+## 3    828826      2451
+##                                                                                                 HansardFileURL
+## 3 https://www.legco.gov.hk/yr17-18/english/counmtg/hansard/cm20180523-translate-e.pdf#nameddest=EV_VOTED_00349</code></pre>
+<p>It is possible to fetch the detailed voting record of each member on this motion. To get a list of members who voted yes:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>v &lt;-<span class="st"> </span><span class="kw">voting_record</span>(<span class="dt">from =</span> w<span class="op">$</span>MeetingDate[<span class="dv">1</span>], <span class="dt">to =</span> w<span class="op">$</span>MeetingDate[<span class="dv">1</span>])</span>
+<span id="cb23-2"><a href="#cb23-2"></a>v[v<span class="op">$</span>Vote <span class="op">==</span><span class="st"> &quot;Yes&quot;</span>, <span class="dv">32</span><span class="op">:</span><span class="dv">33</span>]</span></code></pre></div>
+<pre><code>##                NameEn Constituency
+## 2            James TO   Functional
+## 3     LEUNG Yiu-chung   Functional
+## 6     Prof Joseph LEE   Functional
+## 16         Claudia MO Geographical
+## 20         WU Chi-wai Geographical
+## 23  Charles Peter MOK   Functional
+## 24     CHAN Chi-chuen Geographical
+## 27      Kenneth LEUNG   Functional
+## 29      Dr KWOK Ka-ki Geographical
+## 31        Dennis KWOK   Functional
+## 33 Dr Fernando CHEUNG Geographical
+## 34     Dr Helena WONG Geographical
+## 35        IP Kin-yuen   Functional
+## 42        Alvin YEUNG Geographical
+## 43         Andrew WAN Geographical
+## 44       CHU Hoi-dick Geographical
+## 48     LAM Cheuk-ting Geographical
+## 51       SHIU Ka-chun   Functional
+## 56         Tanya CHAN Geographical
+## 58       HUI Chi-fung Geographical
+## 63      KWONG Chun-yu   Functional
+## 64         Jeremy TAM Geographical
+## 65           Gary FAN Geographical
+## 66         AU Nok-hin Geographical</code></pre>
+<p>To check the attendance of this meeting:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># Find out MeetID of the Council meeting on May 23, 2018</span></span>
+<span id="cb25-2"><a href="#cb25-2"></a><span class="kw">meeting</span>(<span class="dt">from =</span> w<span class="op">$</span>MeetingDate[<span class="dv">1</span>], <span class="dt">to =</span> w<span class="op">$</span>MeetingDate[<span class="dv">1</span>])</span></code></pre></div>
+<pre><code>##   SlotID MeetID
+## 1 174096 131473
+## 2 169121 126590
+## 3 172136 129529
+## 4 169842 127310
+## 5 174121 131498
+##                                                                                                             SubjectEng
+## 1                                            Meeting of Bills Committee on Inland Revenue (Amendment)(No. 6) Bill 2017
+## 2 Council meeting (Regular meeting)\n(or to be held immediately after the meeting for Chief Executive’s Question Time)
+## 3                                                                Council meeting (The Chief Executive&#39;s Question Time)
+## 4                                                                                 Meeting of Public Works Subcommittee
+## 5                      Meeting of Subcommittee on Medical Council (Election and Appointment of Lay Members) Regulation
+##                                                    SubjectChi
+## 1               《2017年稅務(修訂)(第6號)條例草案》委員會會議
+## 2 立法會會議 (例行會議)\n(或緊接行政長官質詢時間的會議後開始)
+## 3                               立法會會議 (行政長官質詢時間)
+## 4                                          工務小組委員會會議
+## 5        《醫務委員會(選舉和委任業外委員)規例》小組委員會會議
+##         StartDateTime MeetingTypeEng MeetingTypeChi VenueCode      VenueNameEng
+## 1 2018-05-23 08:30:00           Open       公開會議      Rm 3 Conference Room 3
+## 2 2018-05-23 11:30:00           Open       公開會議   Chamber           Chamber
+## 3 2018-05-23 11:00:00           Open       公開會議   Chamber           Chamber
+## 4 2018-05-23 08:30:00           Open       公開會議      Rm 1 Conference Room 1
+## 5 2018-05-23 08:30:00           Open       公開會議      Rm 2 Conference Room 2
+##   VenueNameChi TermID
+## 1      會議室3      5
+## 2       會議廳      5
+## 3       會議廳      5
+## 4      會議室1      5
+## 5      會議室2      5
+##                                                                      AgendaUrlEng
+## 1         http://www.legco.gov.hk/yr17-18/english/bc/bc02/agenda/bc0220180523.htm
+## 2           http://www.legco.gov.hk/yr17-18/english/counmtg/agenda/cm20180523.htm
+## 3          http://www.legco.gov.hk/yr17-18/english/counmtg/agenda/cm20180523q.htm
+## 4         http://www.legco.gov.hk/yr17-18/english/fc/pwsc/agenda/pwsc20180523.htm
+## 5 http://www.legco.gov.hk/yr17-18/english/hc/sub_leg/sc58/agenda/sc5820180523.htm
+##                                                                      AgendaUrlChi
+## 1         http://www.legco.gov.hk/yr17-18/chinese/bc/bc02/agenda/bc0220180523.htm
+## 2           http://www.legco.gov.hk/yr17-18/chinese/counmtg/agenda/cm20180523.htm
+## 3          http://www.legco.gov.hk/yr17-18/chinese/counmtg/agenda/cm20180523q.htm
+## 4         http://www.legco.gov.hk/yr17-18/chinese/fc/pwsc/agenda/pwsc20180523.htm
+## 5 http://www.legco.gov.hk/yr17-18/chinese/hc/sub_leg/sc58/agenda/sc5820180523.htm</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>z &lt;-<span class="st"> </span><span class="kw">attendance</span>(<span class="dt">meet_id =</span> <span class="dv">126590</span>)</span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="co"># Show members who were present</span></span>
+<span id="cb27-3"><a href="#cb27-3"></a>z[z<span class="op">$</span>PresentAbsent <span class="op">==</span><span class="st"> &quot;Present&quot;</span>, <span class="dv">7</span><span class="op">:</span><span class="dv">9</span>] </span></code></pre></div>
+<pre><code>##                         MemberNameEnglish MemberNameChinese PresentAbsent
+## 1  Hon Andrew LEUNG Kwan-yuen (President) 梁君彥議員 (主席)       Present
+## 2                    Hon James TO Kun-sun        涂謹申議員       Present
+## 3                     Hon LEUNG Yiu-chung        梁耀忠議員       Present
+## 4                Hon Abraham SHEK Lai-him        石禮謙議員       Present
+## 5                 Hon Tommy CHEUNG Yu-yan        張宇人議員       Present
+## 6            Prof Hon Joseph LEE Kok-long        李國麟議員       Present
+## 7                Hon Jeffrey LAM Kin-fung        林健鋒議員       Present
+## 8                     Hon WONG Ting-kwong        黃定光議員       Present
+## 9                 Hon Starry LEE Wai-king        李慧琼議員       Present
+## 10                       Hon CHAN Hak-kan        陳克勤議員       Present
+## 11                       Hon CHAN Kin-por        陳健波議員       Present
+## 12         Dr Hon Priscilla LEUNG Mei-fun        梁美芬議員       Present
+## 13                      Hon WONG Kwok-kin        黃國健議員       Present
+## 14          Hon Mrs Regina IP LAU Suk-yee      葉劉淑儀議員       Present
+## 15                  Hon Paul TSE Wai-chun        謝偉俊議員       Present
+## 16                         Hon Claudia MO        毛孟靜議員       Present
+## 17               Hon Michael TIEN Puk-sun        田北辰議員       Present
+## 18                 Hon Steven HO Chun-yin        何俊賢議員       Present
+## 19              Hon Frankie YICK Chi-ming        易志明議員       Present
+## 20                         Hon WU Chi-wai        胡志偉議員       Present
+## 21                        Hon YIU Si-wing        姚思榮議員       Present
+## 22                       Hon MA Fung-kwok        馬逢國議員       Present
+## 23                  Hon Charles Peter MOK        莫乃光議員       Present
+## 24                     Hon CHAN Chi-chuen        陳志全議員       Present
+## 25                       Hon CHAN Han-pan        陳恒鑌議員       Present
+## 26                   Hon LEUNG Che-cheung        梁志祥議員       Present
+## 27                      Hon Kenneth LEUNG        梁繼昌議員       Present
+## 28                 Hon Alice MAK Mei-kuen        麥美娟議員       Present
+## 29                      Dr Hon KWOK Ka-ki        郭家麒議員       Present
+## 30                     Hon KWOK Wai-keung        郭偉强議員       Present
+## 31              Hon Dennis KWOK Wing-hang        郭榮鏗議員       Present
+## 32        Hon Christopher CHEUNG Wah-fung        張華峰議員       Present
+## 33       Dr Hon Fernando CHEUNG Chiu-hung        張超雄議員       Present
+## 34             Dr Hon Helena WONG Pik-wan        黃碧雲議員       Present
+## 35                        Hon IP Kin-yuen        葉建源議員       Present
+## 36                     Hon Elizabeth QUAT        葛珮帆議員       Present
+## 37            Hon Martin LIAO Cheung-kong        廖長江議員       Present
+## 38                      Hon POON Siu-ping        潘兆平議員       Present
+## 39                  Dr Hon CHIANG Lai-wan        蔣麗芸議員       Present
+## 40                  Ir Dr Hon LO Wai-kwok        盧偉國議員       Present
+## 41                     Hon CHUNG Kwok-pan        鍾國斌議員       Present
+## 42                        Hon Alvin YEUNG        楊岳橋議員       Present
+## 43                 Hon Andrew WAN Siu-kin        尹兆堅議員       Present
+## 44                       Hon CHU Hoi-dick        朱凱廸議員       Present
+## 45                   Hon Jimmy NG Wing-ka        吳永嘉議員       Present
+## 46              Dr Hon Junius HO Kwan-yiu        何君堯議員       Present
+## 47                        Hon HO Kai-ming        何啟明議員       Present
+## 48                     Hon LAM Cheuk-ting        林卓廷議員       Present
+## 49                Hon Holden CHOW Ho-ding        周浩鼎議員       Present
+## 50                        Hon SHIU Ka-fai        邵家輝議員       Present
+## 51                       Hon SHIU Ka-chun        邵家臻議員       Present
+## 52              Hon Wilson OR Chong-shing        柯創盛議員       Present
+## 53                       Hon YUNG Hoi-yan        容海恩議員       Present
+## 54                     Dr Hon Pierre CHAN        陳沛然議員       Present
+## 55                     Hon CHAN Chun-ying        陳振英議員       Present
+## 56                         Hon Tanya CHAN        陳淑莊議員       Present
+## 57                   Hon CHEUNG Kwok-kwan        張國鈞議員       Present
+## 58                       Hon HUI Chi-fung        許智峯議員       Present
+## 59                     Hon LUK Chung-hung        陸頌雄議員       Present
+## 60                       Hon LAU Kwok-fan        劉國勳議員       Present
+## 61               Hon Kenneth LAU Ip-keung        劉業強議員       Present
+## 62                 Dr Hon CHENG Chung-tai        鄭松泰議員       Present
+## 63                      Hon KWONG Chun-yu        鄺俊宇議員       Present
+## 64                  Hon Jeremy TAM Man-ho        譚文豪議員       Present
+## 65            Hon Vincent CHENG Wing-shun        鄭泳舜議員       Present
+## 66                 Hon Tony TSE Wai-chuen        謝偉銓議員       Present</code></pre>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

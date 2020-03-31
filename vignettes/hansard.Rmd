@@ -1,0 +1,352 @@
+---
+title: "Hansard Database"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{hansard} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+library(legco)
+library(httptest)
+start_vignette("hansard")
+```
+
+## Introduction
+
+This database contains information on matters discussed in Council meeting since the fifth term
+of LegCo. Hinting by its name, the database is built upon the PDF hansard files. Relying on the bookmarks 
+and section codes of the hansard files, the data endpoints retrieve data from the files directly. 
+
+For more details of the database, see <https://www.legco.gov.hk/odata/english/hansard-db.html>.
+
+### Key Identifiers
+
+Here are the key identifies that is useful for locating the necessary data from the Hansard database:
+
+* `HansardID` is the numerical ID of a hansard file. A hansard file is the Record of Proceedings of
+a Council meeting. Since there are three versions of hansard---Floor Chinese and English, 
+each Council meeting has three hansard files, meaning that there are three Hansard IDs corresponding 
+to the same meeting.
+
+* `RundownID` is the numerical ID of a rundown in the hansard file. In simple terms, rundowns can be understood 
+as individual paragraphs in the Record of Proceedings. 
+
+* `SectionCode` is the alphabetical code stipulating the type of business as indicated in the LegCo Rules of 
+Procedures 18(1) that a paragraph text is referring to in the hansard file. 
+
+* `BookmarkName` is the alphabetical code stipulating details of the rundown. A detailed explanation
+can be found [here](#rundown).
+
+* `SpeakerID` is the numerical ID stipulating the speaker of a paragraph text in the hansard file.
+
+These identifiers essentially indicate the *when* (HansardID), *where* (RundownID), *what* (SectionCode) 
+and *who* (SpeakerID) of a paragraph text in the Record of Proceedings.
+
+### Total Count
+
+All functions in this database have an option to return only the total count of the records matching 
+the specified parameters instead of returning the data frame containing the result.
+To activate this option, specify `count = TRUE`:
+
+```{r }
+# Fetch the total number of questions put on the government in LegCo in April, 2019
+v <- questions(from = "2019-04-01", to = "2019-04-30", count = TRUE)
+v
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+---
+
+This database is accessible with the following functions/data:
+
+## hansard()
+
+`hansard()` fetches the information of the hansard files. 
+
+```{r }
+v <- hansard(from = "2019-02-20", to = "2019-02-20")
+v
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+If `isCEQandA` is `1`, the hansard file is the Record of Proceedings of a Chief Executive's Question
+and Answer Session. 
+
+If `isCEQT` is `1`, the hansard file is the Record of Proceedings of a Chief Executive's Question Time.
+
+## legco_section_type
+
+`legco_section_type` is a data frame containing the meaning of the section code.
+
+```{r }
+v <- legco_section_type
+head(v)
+```
+
+## subjects()
+
+`subjects()` fetches all subjects being discussed in a Council meeting. 
+
+```{r eval=FALSE}
+# Fetch second reading of bills during the Council meeting on February 20, 2019
+v <- subjects(hansard_id = 2714, section_code = "b2r")
+head(v)
+```
+```{r echo=FALSE}
+v <- subjects(hansard_id = 2714, section_code = "b2r", to = "2020-03-27")
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+The RundownID indicates the starting RundownID of the subject concerned. For instance, the starting 
+RundownID of *Smoking (Public Health) (Amendment) Bill 2019* is 899628, meaning that the paragraph text
+of this subject is from 899628 to 899649.
+
+If the business is a continuation of a previous meeting, the date of the previous meeting will be shown 
+in the field `ResumptionOf`.
+
+## speakers()
+
+`speakers()` fetches the basic information of speakers in LegCo council meetings. 
+Speakers here refer to all personnel who can speak during the meetings, which include
+not only LegCo members but also government officials and Secretariat staff.
+
+```{r }
+# Fetch a list of all speakers in LegCo council meetings
+v <- speakers()
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+```{r }
+# Fetch a list of all speakers who are LegCo members
+v <- speakers(type = "MB")
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+```{r }
+# Look up the details of a speaker with the id 6
+speakers(speaker_id = 6)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+Every single paragraph in the hansard files (excluding section titles and summoning of bells) is marked
+with the unique Speaker ID to indicate the speaker of the text. 
+
+## rundown()
+
+`rundown()` fetches the paragraph text in hansard files. Note that the result is not in any specific order 
+so it is necessary to reorder if needed.
+
+```{r eval=FALSE}
+# Fetch records of proceedings of the second reading of Smoking (Public Health) (Amendment) Bill 2019
+v <- rundown(rundown_id = 899628:899649)
+v <- v[order(v$RundownID), ]
+rownames(v) <- 1:nrow(v)
+v[3:5, ]
+```
+```{r echo=FALSE}
+v <- rundown(rundown_id = 899628:899649, to = "2020-03-27")
+v <- v[order(v$RundownID), ]
+rownames(v) <- 1:nrow(v)
+v[3:5, ]
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+Though of little use, BookmarkName can be a useful parameter to search for the necessary data. 
+The BookmarkName of the starting Rundown of a subject is a combination of section code and
+the sequence number. For instance, the two bills that were under the process of second reading
+have a BookmarkName of "b2r01" and "b2r02" respectively. Therefore, it is possible to directly
+fetch the starting RundownID of the first bill under second reading on February 20, 2019,
+i.e. *Smoking (Public Health) (Amendment) Bill 2019*, by specifying the BookmarkName:
+
+```{r }
+# Fetch the first bill under second reading on February 20, 2019
+v <- rundown(bookmark_name = "b2r01", from = "2019-02-20", to = "2019-02-20")
+v
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+Similarly, it can be applicable on other SectionCode as well, such as "pop01" and "pop02".
+
+## questions()
+
+`questions()` fetches the question put on the government by LegCo members. Note that this function does 
+not take HansardID as a filtering parameter.
+
+```{r }
+# Fetch questions being put on the government during the Council meeting on February 20, 2019
+v <- questions(from = "2019-02-20", to = "2019-02-20")
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+Similar to the output of `subjects()`, RundownID here refers to the starting RundownID, which can be used 
+to determine the range of the full question text.
+
+## bills()
+
+`bills()` fetches bills being debated in LegCo Council meetings.
+
+```{r eval=FALSE}
+# Fetch bills debated during the Council meeting on February 20, 2019
+v <- bills(hansard_id = 2714)
+head(v)
+```
+```{r echo=FALSE}
+v <- bills(hansard_id = 2714, to = "2020-03-27")
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+Note that the name of a bill may appear more than once like above, since the bill went through first 
+and second reading in the same meeting. To fetch more detailed information and key dates of
+a particular bill, use `all_bills()` instead.
+
+## motions()
+
+`motions()` fetches the motions discussed in Council meetings. 
+
+```{r eval=FALSE}
+# Fetch motions discussed during the Council meeting on February 20, 2019
+v <- motions(hansard_id = 2714)
+head(v)
+```
+```{r echo=FALSE}
+v <- motions(hansard_id = 2714, to = "2020-03-27")
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+Similar to the output of `subjects()` and `questions()`, RundownID here refers to the starting RundownID,
+which can be used to determine the range of the full question text.
+
+## petitions()
+
+`petitions()` fetches the petitions raised by LegCo members in Council meetings. 
+
+```{r eval=FALSE}
+# Fetch petition laid during the Council meeting on January 19, 2018
+v <- petitions(from = "2018-01-10")
+v
+```
+```{r echo=FALSE}
+v <- petitions(from = "2018-01-10", to = "2020-03-27")
+v
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+## addresses()
+
+`addresses()` fetches fetches addresses made by members or government officials while presenting papers
+to the Council.
+
+```{r eval=FALSE}
+# Fetch addresses given during the Council meeting on February 20, 2019
+v <- addresses(hansard_id = 2714)
+v
+```
+```{r echo=FALSE}
+v <- addresses(hansard_id = 2714, to = "2020-03-27")
+v
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+## statements()
+
+`statements()` fetches statements made by government officials in Council meetings.
+
+```{r eval=FALSE}
+# Fetch statements made by government officials during the Council meeting on April 22, 2015
+v <- statements(from = "2015-04-22")
+v
+```
+```{r echo=FALSE}
+v <- statements(from = "2015-04-22", to = "2020-03-27")
+v
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+## voting_results()
+
+`voting_results()` fetches the results of votes conducted in Council meetings. 
+
+```{r eval=FALSE}
+# Fetch results of votes conducted during the Council meeting on January 19, 2018
+v <- voting_results(hansard_id = 2714)
+head(v)
+```
+```{r echo=FALSE}
+v <- voting_results(hansard_id = 2714, to = "2020-03-27")
+head(v)
+```
+```{r echo=FALSE}
+change_state()
+Sys.sleep(2)
+```
+
+`voting_results()` only returns the overall result of the vote. To fetch the voting record of 
+individual members, use `voting_record()` instead.
+
+## summoning_bells()
+
+`summoning_bells()` fetches instances in which the summoning bell have been rung in LegCo
+Council meetings.
+
+```{r eval=FALSE}
+# Fetch instances of summoning bell during the Council meeting on January 19, 2018
+v <- summoning_bells(hansard_id = 2714)
+head(v)
+```
+```{r echo=FALSE}
+# Fetch instances of summoning bell during the Council meeting on January 19, 2018
+v <- summoning_bells(hansard_id = 2714, to = "2020-03-27")
+head(v)
+```
+```{r include=FALSE}
+end_vignette()
+```
