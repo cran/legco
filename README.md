@@ -5,19 +5,21 @@
 
 <!-- badges: start -->
 
-![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/legco)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/legco)](https://cran.r-project.org/package=legco)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
-An R package to fetch data from the Hong Kong Legislative Council
-(LegCo) API.
+R bindings for the Hong Kong Legislative Council (LegCo) API.
 
-本R套件提供從香港立法會開放數據應用程式介面擷取數據的函數。
+本套件提供能在R中直接透過香港立法會開放數據應用程式介面擷取數據的函數。
 
 To install this package, run:
 
 ``` r
+install.packages("legco")
+
+# To install the development version:
 #install.packages("devtools")
 devtools::install_github("elgarteo/legco")
 ```
@@ -58,8 +60,3 @@ Hong Kong.
 
 The Legislative Council of Hong Kong is the copyright owner of data
 retrieved from its open data API.
-
-## To-Do
-
-  - Merge functions from
-    [elgarteo/legcoplus](https://github.com/elgarteo/legcoplus)
